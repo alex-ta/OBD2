@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;OBD2E.java&apos; to &apos;BluetoothDevide/src/com.example.bluetooth&apos;&#x0D;&#x0A;- Original project: &apos;BluetootAutomatic&apos;&#x0D;&#x0A;- Destination element: &apos;BluetoothDevide/src/com.example.bluetooth&apos;&#x0D;&#x0A;- Original element: &apos;com.example.bluetooth.OBD2E.java&apos;" description="Copy compilation unit" destination="=BluetoothDevide/src&lt;com.example.bluetooth" element1="/src&lt;com.example.bluetooth{OBD2E.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1417527398966" units="1" version="1.0"/>
+</session>

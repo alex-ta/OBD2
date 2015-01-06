@@ -1,0 +1,110 @@
+package com.example.bluetooth; 
+import java.util.concurrent.ExecutionException;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
+
+public class ConnectionActivity extends Activity{
+	/**
+	 * Diese Activity kümmert sich um den Datenaustausch zwischen Handy und Gerät.
+	 * Sie verfügt über ein UserInterface zum Teste, dies Klasse wird nicht in der 
+	 * eigentlichen App benötigt und dient nur zum Testen.
+	 * */
+	
+	private BluetoothStream stream;
+	private ListView list;
+	private ArrayAdapter<String> adapter;
+	private Handler guiHandler;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.input_check);
+		list = (ListView) findViewById(R.id.expandableListView_icheck);
+		adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, 0);
+		list.setAdapter(adapter);
+		guiHandler = new Handler();
+		try {
+			stream = new BluetoothStream(MainActivity.bluesocket);
+		} catch (SocketError e) {
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+		}
+	}
+	
+	public void sendMsg (View view){
+		new BgSend().start();
+	} 
+	
+	
+	private void addMsg(final String msg){
+		if(msg != " \n ")
+		guiHandler.post(new Runnable(){
+			@Override
+			public void run(){
+				adapter.add(msg);	
+			}
+			
+		});
+	}
+	
+	private class BgListener extends Thread{
+ 
+		public boolean running;
+		
+		public BgListener(){
+			running = true;
+			}
+		
+		@Override
+		public void run() {
+			super.run();
+			while(running){
+			 	// casted to the specific Datatype -> may be fuel
+				byte[] msg = stream.read();
+				String m = Casts.getString(msg);
+				addMsg(m);	
+				Log.e("recived msg",m+"");
+				OBD2E.sleep(200);
+			}
+			
+		}
+	}
+	
+	private class BgSend extends Thread{
+		
+		public boolean running;
+		public BgSend(){
+			running = true;
+			}
+		
+		@Override
+		public void run() {
+			super.run();
+			//InitOBD2 init = new InitOBD2();
+			AutoInitObd2 init = new AutoInitObd2();
+			init.execute(stream);
+			try {
+				init.get();
+				OBD2E.sleep(OBD2E.MIDDLETIME);
+			} catch (InterruptedException | ExecutionException e1) {
+				e1.printStackTrace();
+			}
+
+			new BgListener().start();
+			
+			while(running){
+				String num = OBD2E.sleepCommandAuto(5000,OBD2E.M1_2_PID_SPEED);
+				stream.write(num);
+				Log.e("wrote msg",num);
+				addMsg("_____\n wrote: "+num);
+			}
+		}
+	}
+}
+

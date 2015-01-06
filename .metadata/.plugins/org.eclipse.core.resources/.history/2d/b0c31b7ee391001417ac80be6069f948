@@ -1,0 +1,37 @@
+package com.example.bluetooth;
+
+import android.os.AsyncTask;
+import android.util.Log;
+
+public class AutoInitObd2  extends AsyncTask<BluetoothStream,BluetoothStream,BluetoothStream>{
+	
+	private BluetoothStream stream;
+	
+	@Override
+	protected BluetoothStream doInBackground(BluetoothStream...stream) {		
+		this.stream = stream[0];
+	
+		initMsg(0, OBD2E.INITATZ);
+		initMsg(OBD2E.LONGTIME, OBD2E.INITATE0);
+		initMsg(OBD2E.MIDDLETIME, OBD2E.INITATL0);	
+		
+		initMsg(OBD2E.LONGTIME, OBD2E.AUTO_ATSP0);
+		initMsg(OBD2E.LONGTIME, OBD2E.AUTO_ATDP);
+		initMsg(OBD2E.LONGTIME, OBD2E.FIRSTCOMMAND);
+		OBD2E.sleep(5000);
+		
+		return null;
+	}
+	
+	
+	private String initMsg(int time, String wrote){
+		stream.write(OBD2E.sleepCommand(time, wrote));
+		Log.e("wrote", wrote);
+		OBD2E.sleep(OBD2E.READTIME);
+		String msg = Casts.getString(stream.read());
+		Log.e("read", msg);
+		return msg;
+	}
+	
+}
+

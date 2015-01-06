@@ -1,0 +1,101 @@
+package obdservice; 
+import java.util.concurrent.ExecutionException;
+
+import com.example.bluetooth.BluetoothActivity;
+import com.example.bluetooth.BluetoothStream;
+import com.example.bluetooth.SocketError;
+
+import android.util.Log;
+
+public class Connect {
+	/**
+	 * Diese Activity kümmert sich um den Datenaustausch zwischen Handy und Gerät.
+	 *
+	 * */
+	
+	private BluetoothStream stream;
+	private BgSend send;
+	private int pidsupport;
+	
+	
+	public Connect(){
+		send= new BgSend();
+		try {
+			stream = new BluetoothStream(BluetoothActivity.bluesocket);
+		} catch (SocketError e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void start(){
+		send.start();
+	}
+	
+	public void close(){
+		send.close();
+	}
+	
+	private void saveToDB(String...msg){
+		
+	}
+
+	private class BgSend extends Thread{
+		public boolean running;
+		public BgSend(){
+			running = true;
+			}
+		
+		@Override
+		public void run() {
+			super.run();
+			AutoInitObd2 init = new AutoInitObd2();
+			init.execute(stream);
+			try {
+				pidsupport = init.get();
+				OBD2E.sleep(OBD2E.MIDDLETIME);
+				switch(pidsupport){
+				case 0: Log.i("PID SUPPORT","NONE");break;
+				case 1: Log.i("PID SUPPORT","0-20");break;
+				case 2: Log.i("PID SUPPORT","20-40"); running = false; break;
+				case 3: Log.i("PID SUPPORT","0-40");break;
+				}
+			} catch (InterruptedException | ExecutionException e1) {
+				e1.printStackTrace();
+			}
+			String fuel ="";
+			String speed="";
+			
+			while(running){
+				String num = OBD2E.sleepCommandAuto(OBD2E.MIDDLETIME,OBD2E.M1_2_PID_SPEED);
+				stream.write(num);
+				Log.i("wrote: ",num);
+				speed= readSpeed(OBD2E.READTIME);
+				Log.i("read ",speed);
+				
+				num = OBD2E.sleepCommandAuto(OBD2E.LONGTIME,OBD2E.M1_2_PID_FUEL);
+				stream.write(num);
+				Log.i("wrote: ",num);
+				fuel= readFuel(OBD2E.READTIME);
+				Log.i("read ",fuel);
+				
+				saveToDB(speed,fuel);
+			}
+		}
+		
+	protected void close(){
+		running = false;
+	}
+	
+	private String readFuel(int timeout){
+		OBD2E.sleep(timeout);
+		return Casts.getFuel(Casts.getString(stream.read()));
+	}
+	private String readSpeed(int timeout){
+		OBD2E.sleep(timeout);
+		return Casts.getSpeed(Casts.getString(stream.read()));
+	}
+	
+	
+	}
+}
+

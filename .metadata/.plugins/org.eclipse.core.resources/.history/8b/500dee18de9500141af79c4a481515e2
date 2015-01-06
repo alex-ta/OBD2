@@ -1,0 +1,34 @@
+package obdservice;
+
+import android.util.Log;
+
+public class Casts {
+	public static final String NOVALUE = "value not supported";
+	public static final String NOMODE = "mode not supported";
+	
+	
+	public static String getString(byte ...bs){
+		String summe = "";
+		for(byte b: bs){
+		summe +=((char)((Byte)b).intValue());	
+		}
+		return summe;
+	}
+	
+	private static String clearString(String msg){
+		msg = msg.trim();
+		msg = msg.replaceAll("[ <>\\r\\n]", "");
+		return msg;
+	}
+	
+	public static String getSpeed(String msg)throws NumberFormatException{
+		msg = clearString(msg);
+		return Integer.parseInt(msg,16)+"";
+	}
+	
+	public static String getFuel(String msg)throws NumberFormatException{
+		msg = clearString(msg);
+		return Integer.parseInt(msg,16)/60+"";
+	}
+	
+}

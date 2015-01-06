@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;PIDLENGTH&apos; in &apos;com.example.bluetooth.OBD2E&apos; to &apos;PIDRECEIVELENGTH&apos;&#x0D;&#x0A;- Original project: &apos;Copy of Bluetooth&apos;&#x0D;&#x0A;- Original element: &apos;com.example.bluetooth.OBD2E.PIDLENGTH&apos;&#x0D;&#x0A;- Renamed element: &apos;com.example.bluetooth.OBD2E.PIDRECEIVELENGTH&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;PIDLENGTH&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src&lt;com.example.bluetooth{OBD2E.java[OBD2E^PIDLENGTH" name="PIDRECEIVELENGTH" references="true" setter="false" stamp="1418310211977" textual="false" version="1.0"/>
+</session>

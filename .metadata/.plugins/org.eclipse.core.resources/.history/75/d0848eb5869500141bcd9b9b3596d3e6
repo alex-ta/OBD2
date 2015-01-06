@@ -1,0 +1,140 @@
+package obdservice; 
+import java.util.concurrent.ExecutionException;
+
+import com.example.bluetooth.BluetoothActivity;
+import com.example.bluetooth.BluetoothStream;
+import com.example.bluetooth.SocketError;
+
+import android.util.Log;
+
+public class Connect {
+	/**
+	 * Diese Activity kümmert sich um den Datenaustausch zwischen Handy und Gerät.
+	 * Sie verfügt über ein UserInterface zum Teste, dies Klasse wird nicht in der 
+	 * eigentlichen App benötigt und dient nur zum Testen.
+	 * */
+	
+	private String speed =" ";
+	private String fuel =" "; 
+	// Service läuft vlt fuel und speed nur als mods lesen ?
+	private BluetoothStream stream;
+	private BgSend send;
+	private BgListener listen;
+	private int canuse= 0;
+	
+	
+	public Connect(){
+		send= new BgSend();
+		listen= new BgListener();
+		try {
+			stream = new BluetoothStream(BluetoothActivity.bluesocket);
+		} catch (SocketError e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void start(){
+		send.start();
+	}
+	
+	public void close(){
+		send.close();
+		listen.close();
+	}
+	
+	private void addMsg(final String msg){
+		if(msg != " \n "||msg!=" "){
+			Log.e("save", msg);
+		}	
+	}
+	
+	private void saveToDB(String msg){
+		if(msg.equals(""))
+			return;
+		Log.e("db", "--------"+msg);
+		if(speed.equals(" ")){
+			speed = msg;
+			return;
+		}
+		if(fuel.equals(" ")){
+			
+			try{
+				fuel = ""+Integer.parseInt(msg);
+			} catch(Exception e){
+				try {fuel = ""+Integer.parseInt(speed)*0.04;
+				} catch(Exception e1){
+				fuel = msg;
+				}
+			}
+			// save to db
+			Log.e("fuel",fuel);
+			Log.e("speed",speed);
+			fuel =" ";
+			speed=" ";
+		}
+	}
+
+	
+	private class BgListener extends Thread{
+		public boolean running;
+		public BgListener(){
+			running = true;
+			}
+		
+		@Override
+		public void run() {
+			super.run();
+			while(running){
+				byte[] msg = stream.read();
+				String m = Casts.getString(msg);
+				m = Casts.getResponse(m);
+				addMsg("received: "+m);
+				saveToDB(m);
+				OBD2E.sleep(OBD2E.READTIME);
+			}
+		}
+		protected void close(){
+			running = false;
+		}
+	}
+	
+	private class BgSend extends Thread{
+		public boolean running;
+		public BgSend(){
+			running = true;
+			}
+		
+		@Override
+		public void run() {
+			super.run();
+			AutoInitObd2 init = new AutoInitObd2();
+			init.execute(stream);
+			try {
+				String msg = init.get();
+				if(msg.contains("0"))
+					canuse++;
+				if(msg.contains("1"))
+					canuse++;
+				OBD2E.sleep(OBD2E.MIDDLETIME);
+			} catch (InterruptedException | ExecutionException e1) {
+				e1.printStackTrace();
+			}
+
+			listen.start();
+			while(running){
+				String num = OBD2E.sleepCommandAuto(OBD2E.MIDDLETIME,OBD2E.M1_2_PID_SPEED);
+				stream.write(num);
+				addMsg("wrote: "+num);
+				num = OBD2E.sleepCommandAuto(OBD2E.LONGTIME,OBD2E.M1_2_PID_FUEL);
+				if(canuse <2)
+					return;
+				stream.write(num);
+				addMsg("wrote: "+num);
+			}
+		}
+	protected void close(){
+		running = false;
+	}
+	}
+}
+

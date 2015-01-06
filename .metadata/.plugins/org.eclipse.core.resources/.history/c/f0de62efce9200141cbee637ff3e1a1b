@@ -1,0 +1,32 @@
+package com.example.bluetooth;
+
+public class Casts {
+	
+	public static String getString(byte ...bs){
+		String summe = "";
+		for(byte b: bs){
+		summe +=((char)((Byte)b).intValue());	
+		}
+		return summe;
+	}
+	
+	public static String HexzuInt(String s){
+		int i = Integer.decode("0x"+s);
+		return ""+i;
+	}
+	
+	public static String getSpeed(byte...bs){
+		byte b = bs[2];// returns 3th value of the bs
+		String value = ((Byte)b).toString(); // returns string of bytes 
+		return HexzuInt(value);
+	}
+	
+	public static String getFuel(byte...bs){
+		byte b = bs[2];
+		String hex = ((Byte)b).toString();
+		int value = Integer.parseInt(hex,16); // cast the string hex value to an int
+		int fuel = (value-128) * 100/128;
+		return fuel+"";
+	}
+	
+}
