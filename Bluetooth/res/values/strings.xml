@@ -6,5 +6,8 @@
     <string name="action_settings">Settings</string>
     <string name="refresh">Refresh</string>
     <string name="ok">OK</string>
+    
+    <string name="onobd">Turn OBD on</string>
+    <string name="offobd">Turn OBD off</string>
 
 </resources>
