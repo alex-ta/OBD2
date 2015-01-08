@@ -1,15 +1,16 @@
 package com.example.bluetooth;
 
-public class SocketError extends Exception{
+public class SocketError extends Exception {
 
 	/**
+	 * @author Alex
 	 * Diese Klasse ist der Fehler den die Klasse BluetoothStream auslösen kann,
 	 * wenn kein gültiger Bluetoothsocket verbunden wird.
 	 */
 	private static final long serialVersionUID = 1L;
-	
-	public SocketError(String s){
-	super(s);	
+
+	public SocketError(String s) {
+		super(s);
 	}
 
 }

@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import obdservice.OBDservice;
-
 import com.example.bluetooth.R;
-
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,11 +26,12 @@ import android.widget.Toast;
 
 public class BluetoothActivity extends Activity {
 	/**
-	 * Die Mainactivity ist der Einstiegspunkt des 
-	 * Bluetoothfeatures. Durch diese Activity wird
-	 * das Paaren (pairing) zweier Geräte intern überwacht.
-	 * Nach dem pairing, werden Die Geräte miteinander Verbunden,
-	 * diese Verbindung wird im Attribute bluesocket gespeichert.
+	 * @author Alex
+	 * Die Mainactivity ist der Einstiegspunkt des Bluetoothfeatures. Durch
+	 * diese Activity wird das Paaren (pairing) zweier Geräte intern überwacht.
+	 * Nach dem pairing, werden Die Geräte miteinander Verbunden, diese
+	 * Verbindung wird im Attribute bluesocket gespeichert. Nach dem der
+	 * Bluetoothsocket etabliert wurde startet der OBD Service automatisch
 	 * */
 
 	private ArrayAdapter<String> listAdapter;
@@ -43,7 +40,8 @@ public class BluetoothActivity extends Activity {
 	private BluetoothAdapter bluetooth;
 	private ArrayList<BluetoothDevice> devices;
 	private IntentFilter filter;
-	private BroadcastReceiver receiver,receiver1,receiver2,receiver3,receiverpair;
+	private BroadcastReceiver receiver, receiver1, receiver2, receiver3,
+			receiverpair;
 	private OnItemClickListener listener;
 	public static BluetoothSocket bluesocket;
 	private static boolean isturnonrequest = false;
@@ -51,20 +49,24 @@ public class BluetoothActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		/**
-		 * Hier werden ähnlich wie in einem Konstrukto Startdaten festgelegt.
+		 * Hier werden ähnlich wie in einem Konstruktor Startdaten festgelegt.
 		 * Es wird eine Layout verknüpft, das wir als XMLvordefiniert haben
-		 * (select_bluetooth). Nach dem Layout werden die einzelnen LayoutElemente
-		 * Verknüpft. Das wichtigste Element des Layouts ist die Liste, Sie zeigt später
-		 * die verfügbaren Bluetoothgeräte an. eine Liste besteht aus einem GUI Element
-		 * ListView und einem ListAdaper, der den Inhalt der Liste verwaltet.
+		 * (select_bluetooth). Nach dem Layout werden die einzelnen
+		 * LayoutElemente Verknüpft. Das wichtigste Element des Layouts ist die
+		 * Liste, Sie zeigt später die verfügbaren Bluetoothgeräte an. eine
+		 * Liste besteht aus einem GUI Element ListView und einem ListAdaper,
+		 * der den Inhalt der Liste verwaltet.
 		 * 
-		 * Desweiteren wird hier der BluetoothAdapter bluetooth inizalisiert, indem der Bluetoothsensor
-		 * per getDefaultAdapter zur Verfügung gestellt wird. Falls Bluetooth aus ist, oder kein
-		 * Sensor vorhanden ist, hat bluetooth den Wert null. Ist das der Fall, wird Bluetoth angeschalten
-		 * oder eine Meldung erscheint das kein Sensor vorhanden ist.
+		 * Desweiteren wird hier der BluetoothAdapter bluetooth inizalisiert,
+		 * indem der Bluetoothsensor per getDefaultAdapter zur Verfügung
+		 * gestellt wird. Falls Bluetooth aus ist, oder kein Sensor vorhanden
+		 * ist, hat bluetooth den Wert null. Ist das der Fall, wird Bluetoth
+		 * angeschalten oder eine Meldung erscheint das kein Sensor vorhanden
+		 * ist.
 		 * 
-		 * Zuletzt werden Intentfilter angemeldet. Diese werden durch Aktionen der Bluetoothfilters ausgelöst,
-		 * um später die Fortschritte zu überwachen (tracing)
+		 * Zuletzt werden Intentfilter angemeldet. Diese werden durch Aktionen
+		 * der Bluetoothfilters ausgelöst, um später die Fortschritte zu
+		 * überwachen (tracing)
 		 * */
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -77,10 +79,10 @@ public class BluetoothActivity extends Activity {
 		listView.setAdapter(listAdapter);
 		listener = new ItemClickBT();
 		listView.setOnItemClickListener(listener);
- 
+
 		bluetooth = BluetoothAdapter.getDefaultAdapter();
 		devices = new ArrayList<BluetoothDevice>();
-		
+
 		if (bluetooth == null) {
 			Toast.makeText(getApplicationContext(), "No bluetooth detected",
 					Toast.LENGTH_SHORT).show();
@@ -88,7 +90,7 @@ public class BluetoothActivity extends Activity {
 		} else {
 			if (!bluetooth.isEnabled()) {
 				turnOnBT();
-			} else 
+			} else
 				startDiscovery();
 
 		}
@@ -114,25 +116,37 @@ public class BluetoothActivity extends Activity {
 	}
 
 	private void startDiscovery() {
-		/**startet eine Bluetooth Gerätesuche, und beended die vorherige, falls vorhanden*/
+		/**
+		 * startet eine Bluetooth Gerätesuche, und beended die vorherige, falls
+		 * vorhanden
+		 */
 		bluetooth.cancelDiscovery();
 		bluetooth.startDiscovery();
 
 	}
 
 	private void reset() {
-		/**Löscht die Liste der Bluetooth Geräte und startet einen neuen Gerätesuchlauf*/
+		/**
+		 * Löscht die Liste der Bluetooth Geräte und startet einen neuen
+		 * Gerätesuchlauf
+		 */
 		devices.clear();
 		startDiscovery();
 	}
 
 	public void refresh(View view) {
-		/**Wrapper der ResetMethode für einen Button (erwartet intern View Parameter)*/
+		/**
+		 * Wrapper der ResetMethode für einen Button (erwartet intern View
+		 * Parameter)
+		 */
 		reset();
 	}
 
 	private void turnOnBT() {
-		/**isturnonrequest wird auf true gesetzt, dannach wird eine Bluetoothanfrage ausgelöst*/
+		/**
+		 * isturnonrequest wird auf true gesetzt, dannach wird eine
+		 * Bluetoothanfrage ausgelöst
+		 */
 		isturnonrequest = true;
 		Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 		startActivityForResult(intent, 1);
@@ -140,9 +154,11 @@ public class BluetoothActivity extends Activity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		/**Diese Methode wird aufgerufen, wenn die Methode ein Ergebnis zurückbekommet (Hier von
-		 * der Bluetoothanfrage)  falls das anschalten des Bluetooth nicht erfolg wird die App beendet
-		 * falls das Bluetooth angeschalten wurde, wird das suchen nache Gerätern gestartet.
+		/**
+		 * Diese Methode wird aufgerufen, wenn die Methode ein Ergebnis
+		 * zurückbekommet (Hier von der Bluetoothanfrage) falls das anschalten
+		 * des Bluetooth nicht erfolg wird die App beendet falls das Bluetooth
+		 * angeschalten wurde, wird das suchen nache Gerätern gestartet.
 		 * */
 		super.onActivityResult(requestCode, resultCode, data);
 		if (resultCode == RESULT_CANCELED) {
@@ -157,37 +173,42 @@ public class BluetoothActivity extends Activity {
 
 	private class ReceiverBT extends BroadcastReceiver {
 		/**
-		 * Private Klasse ReceiverBT, diese Klasse arbeitet mit den Einkommenden Bluetooth
-		 * Ereignissen. Der Receiver wurde oben mit IntentFiltern auf die Ereignisse spezialisiert.
+		 * Private Klasse ReceiverBT, diese Klasse arbeitet mit den Einkommenden
+		 * Bluetooth Ereignissen. Der Receiver wurde oben mit IntentFiltern auf
+		 * die Ereignisse spezialisiert.
 		 * */
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			/**diese Methode entscheided was passiert, wenn ein angemeldetes Ereignis ausgelöst wird.
-			 *1) Ein neues Bluetoothgerät wird gefunden, falls es noch nicht vorhanden ist, wird es der Liste
-			 *	 Hinzugefügt, dannach wird die Liste gelöscht und alle gefunden Geräte werden wieder eingetragen,
-			 *	 damit Geräte die nicht mehr vorhanden sind auch nicht auftauchen.
-			 *2) Gerätesuche wird gestarte, Wartesymbol wird gesetzt.
-			 *3) Gerätesuche wird beendet, Wartesymbol wird versteckt.
-			 *4) Bluetooth wird deaktivert, eine Anfrage zur Bluetoothaktivierung wird gesendet.
+			/**
+			 * diese Methode entscheided was passiert, wenn ein angemeldetes
+			 * Ereignis ausgelöst wird. 1) Ein neues Bluetoothgerät wird
+			 * gefunden, falls es noch nicht vorhanden ist, wird es der Liste
+			 * Hinzugefügt, dannach wird die Liste gelöscht und alle gefunden
+			 * Geräte werden wieder eingetragen, damit Geräte die nicht mehr
+			 * vorhanden sind auch nicht auftauchen. 2) Gerätesuche wird
+			 * gestarte, Wartesymbol wird gesetzt. 3) Gerätesuche wird beendet,
+			 * Wartesymbol wird versteckt. 4) Bluetooth wird deaktivert, eine
+			 * Anfrage zur Bluetoothaktivierung wird gesendet.
 			 * */
 			switch (intent.getAction()) {
 			case BluetoothDevice.ACTION_FOUND:
 				BluetoothDevice device = intent
 						.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				
-				if(!devices.contains(device))
-				devices.add(device);
+
+				if (!devices.contains(device))
+					devices.add(device);
 				listAdapter.clear();
-				for(BluetoothDevice dev : devices){
-				if (bluetooth.getBondedDevices().contains(dev)) {
-					listAdapter.add(dev.getName() + "      paired      "
-							+ "\n" + dev.getAddress());
-				} else {
-					listAdapter.add(dev.getName() + "\n"
-							+ dev.getAddress());
-				}}
-				
+				for (BluetoothDevice dev : devices) {
+					if (bluetooth.getBondedDevices().contains(dev)) {
+						listAdapter.add(dev.getName() + "      paired      "
+								+ "\n" + dev.getAddress());
+					} else {
+						listAdapter
+								.add(dev.getName() + "\n" + dev.getAddress());
+					}
+				}
+
 				break;
 			case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
 				setProgressBarIndeterminateVisibility(true);
@@ -207,14 +228,14 @@ public class BluetoothActivity extends Activity {
 	}
 
 	private class ItemClickBT implements OnItemClickListener {
-		/**Private Klasse die die Clicks auf Listensymbole auswertet*/
+		/** Private Klasse die die Clicks auf Listensymbole auswertet */
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
 			/**
-			 * Diese Methode wird durch eine Klick auf eine Listenelement ausgelöst.
-			 * das Gerätesuchen wird beendet. Dannach wird das Gerät gepaired,
-			 * oder falls es schon gepaired ist unpaired.
+			 * Diese Methode wird durch eine Klick auf eine Listenelement
+			 * ausgelöst. das Gerätesuchen wird beendet. Dannach wird das Gerät
+			 * gepaired, oder falls es schon gepaired ist unpaired.
 			 * */
 			if (bluetooth.isDiscovering()) {
 				bluetooth.cancelDiscovery();
@@ -232,8 +253,8 @@ public class BluetoothActivity extends Activity {
 	/** RMI METHODES OF BLUETOOTH **/
 	private void unpairDevice(BluetoothDevice device) {
 		/**
-		 * Diese Methode löscht ein gepaired es Gerät. Um auch Geräte ab
-		 * 3.0 Zu nutzten, wird die private Methode removeBond aufgerufen.
+		 * Diese Methode löscht ein gepaired es Gerät. Um auch Geräte ab 3.0 Zu
+		 * nutzten, wird die private Methode removeBond aufgerufen.
 		 * */
 		try {
 			Method method = device.getClass().getMethod("removeBond",
@@ -246,8 +267,7 @@ public class BluetoothActivity extends Activity {
 
 	private void unpairDeciveConnected(BluetoothDevice device) {
 		/**
-		 * Diese Methode löscht alle gepaired es Gerät und gibt einen
-		 * Text aus.
+		 * Diese Methode löscht alle gepaired es Gerät und gibt einen Text aus.
 		 * */
 		unpairDevice(device);
 		Toast.makeText(getApplicationContext(), "Pairing dissconnected",
@@ -256,8 +276,8 @@ public class BluetoothActivity extends Activity {
 
 	private void pairDevice(BluetoothDevice device) {
 		/**
-		 * Diese Methode paired ein Gerät. Um auch Geräte ab
-		 * 3.0 Zu nutzten, wird die private Methode removeBond aufgerufen.
+		 * Diese Methode paired ein Gerät. Um auch Geräte ab 3.0 Zu nutzten,
+		 * wird die private Methode removeBond aufgerufen.
 		 * */
 		try {
 			Method method = device.getClass().getMethod("createBond",
@@ -270,18 +290,20 @@ public class BluetoothActivity extends Activity {
 
 	private class AsyncPair extends
 			AsyncTask<BluetoothDevice, BluetoothDevice, BluetoothDevice> {
-		/**Dieser Thread führt das Paaren zweiter Bluetoothgeräte asynchrone aus*/
+		/**
+		 * Dieser Thread führt das Paaren zweiter Bluetoothgeräte asynchrone aus
+		 */
 
 		@Override
 		protected BluetoothDevice doInBackground(BluetoothDevice... params) {
 			/**
-			 * asynchrone werden alle Geräte gelöscht, dannach wir das richtige 
+			 * asynchrone werden alle Geräte gelöscht, dannach wir das richtige
 			 * Geräte mit dem Device gepaired.
 			 * */
-			if(bluetooth.getBondedDevices().size() > 0)
-			for (BluetoothDevice d : bluetooth.getBondedDevices()) {
-				unpairDevice(d);
-			}
+			if (bluetooth.getBondedDevices().size() > 0)
+				for (BluetoothDevice d : bluetooth.getBondedDevices()) {
+					unpairDevice(d);
+				}
 			pairDevice(params[0]);
 			return params[0];
 		}
@@ -289,8 +311,9 @@ public class BluetoothActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			/**
-			 * Wird vor der ausführung des asynchronen Tasks ausgeführt, 
-			 * sorgt für das Bessere Userverständiss (Wartesymbol und Text was passiert)
+			 * Wird vor der ausführung des asynchronen Tasks ausgeführt, sorgt
+			 * für das Bessere Userverständiss (Wartesymbol und Text was
+			 * passiert)
 			 * */
 			super.onPreExecute();
 			bluetooth.cancelDiscovery();
@@ -304,15 +327,16 @@ public class BluetoothActivity extends Activity {
 	private class ReceiverBTPair extends BroadcastReceiver {
 		/**
 		 * Receiver der wie davor die Ereignisse des Bluetoothgerätes abfängt,
-		 * dieser Receiver ist auf den Verbindungsstatus von Bluetooth spezialisiert.
-		 * 1) Wird ausgelöst falls etwas mit Bluetooth passiert
-		 * 	1.1) Falls das Gerät versucht hat sich zu paaren und nun gepaart ist,
-		 * 		 wird eine Meldung ausgegeben das Bluetooth gepaired ist, außerdem wird jetzt
-		 * 		 die verbindung (connection) gestartet. Und die Liste der Geräte gelöscht.
-		 *  1.2) Falls das Gerät vom Zustand gepaart zu nicht gepaart wechselt wird hier die
-		 *  	 Liste der Geräte gelöscht
-		 * 		
-		 * 		 das löschen der Liste ähnelt einem update, da alle Werte erneut eingetragen werden.
+		 * dieser Receiver ist auf den Verbindungsstatus von Bluetooth
+		 * spezialisiert. 1) Wird ausgelöst falls etwas mit Bluetooth passiert
+		 * 1.1) Falls das Gerät versucht hat sich zu paaren und nun gepaart ist,
+		 * wird eine Meldung ausgegeben das Bluetooth gepaired ist, außerdem
+		 * wird jetzt die verbindung (connection) gestartet. Und die Liste der
+		 * Geräte gelöscht. 1.2) Falls das Gerät vom Zustand gepaart zu nicht
+		 * gepaart wechselt wird hier die Liste der Geräte gelöscht
+		 * 
+		 * das löschen der Liste ähnelt einem update, da alle Werte erneut
+		 * eingetragen werden.
 		 * 
 		 * */
 
@@ -332,9 +356,9 @@ public class BluetoothActivity extends Activity {
 						&& prevState == BluetoothDevice.BOND_BONDING) {
 					Toast.makeText(getApplicationContext(),
 							"Pairing established", Toast.LENGTH_SHORT).show();
-							reset();
-					new AsyncConnect().execute((BluetoothDevice) bluetooth.getBondedDevices().toArray()[0]);
-					
+					reset();
+					new AsyncConnect().execute((BluetoothDevice) bluetooth
+							.getBondedDevices().toArray()[0]);
 
 				} else if (state == BluetoothDevice.BOND_NONE
 						&& prevState == BluetoothDevice.BOND_BONDED) {
@@ -347,18 +371,17 @@ public class BluetoothActivity extends Activity {
 
 	private class AsyncConnect extends
 			AsyncTask<BluetoothDevice, BluetoothSocket, BluetoothSocket> {
-		/**Diese Klasse ist eine Thread der asynchrone die Verbindung etabliert*/
+		/** Diese Klasse ist eine Thread der asynchrone die Verbindung etabliert */
 
 		@Override
 		protected BluetoothSocket doInBackground(BluetoothDevice... params) {
 			/**
-			 * Diese Methode wird asyncrhone ausgeführ, hier wird ein Gerät
-			 * das gepaart wurde verbunden, dabei wird die GeräteId des anderen 
-			 * Gerätes in die Methode createRfcommSocketToServiceRecord übergeben,
-			 * diese Methode öffnet den Bluetoothsocket über den die Communication läuft.
-			 * Dannach wird der Socket verbunden. 
-			 * Fehler werden abgefangen und gelogged.
-			 * Der Socket wird aus zurückgegebn.
+			 * Diese Methode wird asyncrhone ausgeführ, hier wird ein Gerät das
+			 * gepaart wurde verbunden, dabei wird die GeräteId des anderen
+			 * Gerätes in die Methode createRfcommSocketToServiceRecord
+			 * übergeben, diese Methode öffnet den Bluetoothsocket über den die
+			 * Communication läuft. Dannach wird der Socket verbunden. Fehler
+			 * werden abgefangen und gelogged. Der Socket wird aus zurückgegebn.
 			 * */
 			BluetoothSocket socket = null;
 			try {
@@ -389,8 +412,8 @@ public class BluetoothActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			/**
-			 * Diese Methode wird vor dem asynchronen Thread ausgefürht 
-			 * und informiert den Nutzer was gerade Passiert.
+			 * Diese Methode wird vor dem asynchronen Thread ausgefürht und
+			 * informiert den Nutzer was gerade Passiert.
 			 * */
 			super.onPreExecute();
 			view.setProgressBarIndeterminateVisibility(true);
@@ -401,42 +424,48 @@ public class BluetoothActivity extends Activity {
 		@Override
 		protected void onPostExecute(BluetoothSocket result) {
 			/**
-			 * Diese Methode wird nach dem Beenden des asynchronen Threads 
+			 * Diese Methode wird nach dem Beenden des asynchronen Threads
 			 * ausgeführt, der Nutzer wird wieder informiert, desweiteren wird
-			 * die Activity ConnectionActivity gestartet. 
-			 * Falls das Verbinden Fehlgeschlagen ist, erscheint eine Meldung.
-			 * 
+			 * der OBD2 Service gestartet. Falls das Verbinden Fehlgeschlagen
+			 * ist, erscheint eine Meldung.
 			 * */
 			super.onPostExecute(result);
-			if (result != null){
+			if (result != null) {
 				bluesocket = result;
 				Toast.makeText(getApplicationContext(), "Connection success",
 						Toast.LENGTH_SHORT).show();
 				view.setProgressBarIndeterminateVisibility(false);
-				//reset();
-				 startService(new Intent(getApplicationContext(), obdservice.OBDservice.class));
-				 close();
-			}else
+
+				startService(new Intent(getApplicationContext(),
+						obdservice.OBDservice.class));
+				close();
+			} else
 				Toast.makeText(getApplicationContext(), "Connection failed",
 						Toast.LENGTH_SHORT).show();
 		}
 
 	}
-	
+
+	@Override
 	public void onBackPressed() {
-	    close();
+		/** die Action bei dem Rückwärtsbutton wird hier überschrieben */
+		close();
 	}
-	
+
 	public void close() {
+		/**
+		 * diese Funktion schließt die Activity und gibt zurück ob die
+		 * Verbindung geklappt hat oder nicht
+		 * */
 		Intent data = new Intent();
-		if(bluesocket != null)
-		data.putExtra("ison", true);
+		if (bluesocket != null)
+			data.putExtra("ison", true);
 		else
-		data.putExtra("ison", false);	
+			data.putExtra("ison", false);
 		if (getParent() == null) {
-		    setResult(Activity.RESULT_OK, data);
+			setResult(Activity.RESULT_OK, data);
 		} else {
-		    getParent().setResult(Activity.RESULT_OK, data);
+			getParent().setResult(Activity.RESULT_OK, data);
 		}
 		this.unregisterReceiver(receiver);
 		this.unregisterReceiver(receiver1);

@@ -1,0 +1,75 @@
+package obdservice;
+
+import android.util.Log;
+
+public class Casts {
+	/**
+	 * @author Alex
+	 * 
+	 *         Diese Klasse Castet die Ergebnisse des Bluetoothstreams NOVALUE
+	 *         ist der Rückgabewert bei falschen Eingaben
+	 */
+
+	public static String NOVALUE = "NoData";
+	private static String speedresponse = "410D";
+	private static String fuelresponse ="====";
+	
+	private static final float GASCONST = 8.314f;
+	private static final float AIRMASS = 28.97f;
+	private static final float VOLUMERATE = 0.8f;
+	private static final float ENGINEDISPLACEMENT = 1.6f;
+	
+	public static String getString(byte... bs) {
+		/** castet ein Byte Array zu einem String */
+		String summe = "";
+		for (byte b : bs) {
+			summe += ((char) ((Byte) b).intValue());
+		}
+		return summe;
+	}
+
+	private static String clearString(String msg) {
+		/** löscht alle Sonderzeichen aus einem String */
+		msg = msg.trim();
+		msg = msg.replaceAll("[ <>\\r\\n]", "");
+		return msg;
+	}
+
+	public static String getSpeed(String msg) throws NumberFormatException {
+		/**
+		 * gibt einen String als Speed zurück falls das nicht klappt gibt die
+		 * Funktion NOVALUE zurück
+		 * */
+		Log.e("msgspeed", msg);
+		msg = clearString(msg);
+		if (msg.contains(speedresponse)) {
+			msg = msg.replace(speedresponse, "");
+			return Integer.parseInt(msg, 16) + "";
+		}
+		return NOVALUE;
+	}
+
+	
+	public static int getValue(String msg) throws NumberFormatException {
+		/**
+		 * gibt einen String als Fuel zurück falls das nicht klappt gibt die
+		 * Funktion NOVALUE zurück
+		 * */
+		Log.e("work on fuel", msg);
+		msg = clearString(msg);
+		Log.e("msgfuel", msg);
+		if (msg.contains(fuelresponse)) {
+			msg = msg.replace(fuelresponse, "");
+			return Integer.parseInt(msg, 16);
+		}
+		return 0;
+	}
+	
+	private static double getMAF(double rpm,double map, double ita){
+		double imap = rpm*map/ita/2;
+		double maf = (imap/60)*VOLUMERATE*ENGINEDISPLACEMENT*(AIRMASS*GASCONST);
+		return maf;
+	}
+	
+
+}
