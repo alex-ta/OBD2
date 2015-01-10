@@ -6,7 +6,7 @@ public class Casts {
 	/**
 	 * @author Alex
 	 * 
-	 *         Diese Klasse Castet die Ergebnisse des Bluetoothstreams NOVALUE
+		 *         Diese Klasse Castet die Ergebnisse des Bluetoothstreams NOVALUE
 	 *         ist der Rückgabewert bei falschen Eingaben
 	 */
 
@@ -14,7 +14,7 @@ public class Casts {
 	private static String speedresponse = "410D";
 	private static String rpmresponse ="410C";
 	private static String iatresponse ="410F";
-	private static String mapresponse ="410B";
+	private static String mapresponse ="410B";	
 	
 	private static final float GASCONST = 8.314f;
 	private static final float AIRMASS = 28.97f;
@@ -52,49 +52,52 @@ public class Casts {
 	}
 
 	
-	public static int getRPM(String msg) throws NumberFormatException {
+	public static double getRPM(String msg) throws NumberFormatException {
 		/**
 		 * gibt einen Double als RMP zurück falls das nicht klappt gibt die
 		 * Funktion 0 zurück
 		 * */
 		Log.e("rpm", msg);
 		msg = clearString(msg);
-		Log.e("rpm", msg);
 		if (msg.contains(rpmresponse)) {
 			msg = msg.replace(rpmresponse, "");
-			int A = Integer.parseInt(msg.substring(0, 1));
-			int B = Integer.parseInt(msg.substring(2, 3));
-			return ((A*256)+B)/4;
+			int A = Integer.parseInt(msg.substring(0, 2),16);
+			int B = Integer.parseInt(msg.substring(2, 4),16);
+			double rpm =  ((A*256)+B)/100;	
+			//Log.e("msgrpm", rpm+"");
+			return rpm;
 		}
 		return 1;
 	}
 	
-	public static int getIAT(String msg) throws NumberFormatException {
+	public static double getIAT(String msg) throws NumberFormatException {
 		/**
 		 * gibt einen Double als RMP zurück falls das nicht klappt gibt die
 		 * Funktion 0 zurück
 		 * */
 		Log.e("iat", msg);
 		msg = clearString(msg);
-		Log.e("iat", msg);
 		if (msg.contains(iatresponse)) {
 			msg = msg.replace(iatresponse, "");
-			return Integer.parseInt(msg, 16)-40;
+			double iat = Integer.parseInt(msg, 16)-40;
+			//Log.e("msgiat", iat+"");
+			return iat;
 		}
 		return 1;
 	}
 	
-	public static int getMAP(String msg) throws NumberFormatException {
+	public static double getMAP(String msg) throws NumberFormatException {
 		/**
 		 * gibt einen Double als RMP zurück falls das nicht klappt gibt die
 		 * Funktion 0 zurück
 		 * */
-		Log.e("msp", msg);
-		msg = clearString(msg);
 		Log.e("map", msg);
+		msg = clearString(msg);
 		if (msg.contains(mapresponse)) {
 			msg = msg.replace(mapresponse, "");
-			return Integer.parseInt(msg, 16);
+			double map = Integer.parseInt(msg, 16);
+			//Log.e("msgmap", map+"");
+			return map;
 		}
 		return 1;
 	}
@@ -114,7 +117,8 @@ public class Casts {
 		 * returns fuel
 		 **/
 		double maf = getMAF(rpm,map,iat);
-		double lph = maf/14.7*3600;
+		double gof = (maf/14.7/6.17/454);
+		double lph = gof*3.78541178*100;
 		return lph;
 	}
 }

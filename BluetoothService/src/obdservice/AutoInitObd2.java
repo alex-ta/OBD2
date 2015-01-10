@@ -25,8 +25,11 @@ public class AutoInitObd2 extends AsyncTask<BluetoothStream, Integer, Integer> {
 		 * initialisiert das ELM Protokoll das das Auto unterstütz automatisch
 		 * ATDP fragt ab ob die Abfrage automatisch passiert.
 		 * 
-		 * FIRSTCOMMAND initialisiert die ersten 20 PIDs SECOUNDCOMMAND
-		 * initialisiert die PIDs 20-40
+		 * FIRSTCOMMAND initialisiert die ersten 20 PIDs 
+		 * SECOUNDCOMMAND initialisiert die PIDs 20-40
+		 * THIRDCOMMAND initialisiert die PIDs 40-60
+		 * 
+		 * Initialisierung dauert 22 Sekunden
 		 * */
 		this.stream = stream[0];
 

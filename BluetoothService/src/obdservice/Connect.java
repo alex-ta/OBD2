@@ -77,6 +77,7 @@ public class Connect {
 			 * abgefragt. Die Ergebnisse werden über die Casts in den richtigen
 			 * Datentyp konvertiert und dann an die saveToDB übergeben
 			 * 
+			 * Dauer für einen Durchlauf 8 Sekunden.
 			 * */
 			super.run();
 			AutoInitObd2 init = new AutoInitObd2();
@@ -112,7 +113,7 @@ public class Connect {
 			}
 			String fuel = "";
 			String speed = "";
-			int rpm,iat,map;
+			double rpm,iat,map;
 			
 
 			while (running) {
@@ -142,6 +143,7 @@ public class Connect {
 				Log.i("read ", map+"");
 				
 				fuel = Casts.getFuel(rpm, map, iat)+"";
+				Log.i("fuel",fuel);
 				saveToDB(speed, fuel);
 			}
 		}
@@ -151,20 +153,20 @@ public class Connect {
 			running = false;
 		}
 
-		private int readRPM(int timeout) {
+		private double readRPM(int timeout) {
 			/** Methode die RPM liest */
 			OBD2E.sleep(timeout);
 			return Casts.getRPM(Casts.getString(stream.read()));
 		}
-		private int readIAT(int timeout) {
+		private double readIAT(int timeout) {
 			/** Methode die IAT liest */
 			OBD2E.sleep(timeout);
-			return Casts.getRPM(Casts.getString(stream.read()));
+			return Casts.getIAT(Casts.getString(stream.read()));
 		}
-		private int readMAP(int timeout) {
+		private double readMAP(int timeout) {
 			/** Methode die MAP liest */
 			OBD2E.sleep(timeout);
-			return Casts.getRPM(Casts.getString(stream.read()));
+			return Casts.getMAP(Casts.getString(stream.read()));
 		}
 
 		private String readSpeed(int timeout) {
